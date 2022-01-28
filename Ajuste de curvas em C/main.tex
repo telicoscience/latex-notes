@@ -1,0 +1,144 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[portuguese]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+
+
+
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{proof}{Demonstração}[section]
+
+\title{Ajuste de curvas}
+\author{Télico Oliveira}
+
+\begin{document}
+\maketitle
+\section{Resumo}
+A partir de um problema disponível no livro Cálculo numérico e aplicações, vamos discorrer sobre ajustes de curvas e implementar um algoritmo que calcula a reta que mais se aproxima de um conjunto de pontos dados utilizando o método dos mínimos quadrados. 
+\\
+\textbf{Problema} Construir um diagrama de dispersão das medidas das variáveis x e y. 
+\begin{eqnarray*}
+    x_i = \{1.3, 3.4, 5.1, 6.8, 8.0 \} \\
+    y_i = \{2.0, 5.2, 3.8, 6.1, 5.8 \}
+\end{eqnarray*}
+\begin{equation}
+    d_i = y_i - \hat{y_i}
+\end{equation}
+\begin{equation}
+    D = \sum_{i = 1}^n d_i^2
+\end{equation}
+A variável D calcula os desvios das ordenadas de cada ponto em relação a uma determinada reta e faz o somatório dos quadrados desses desvios. 
+
+O problema consiste em encontrar os coeficientes $b_0$ e $b_1$ dessa reta. 
+\begin{equation}
+    \hat{y_i} = b_0 + b_1 x_i
+\end{equation}
+Considere que D é uma função dos coeficientes $b_0$ e $b_1$ $D(b_0, b_1)$, ou seja
+\begin{equation*}
+    D(b_0, b_1) = \sum_{i = 1}^n d_i^2
+\end{equation*}
+\begin{equation*}
+    D(b_0, b_1) = \sum_{i = 1}^n \left[ y_i - (b_0 + b_1x_i)\right]^2
+\end{equation*}
+\section{Escolha da melhor reta}
+
+A reta que mais se aproxima do conjunto de pontos dados será aquela que possuir o menor desvio . para encontrarmos esta reta, precisamos calcular as derivadas parciais de $D(b_0, b_1)$ e igualá-las a zero. 
+\begin{equation}
+     D(b_0, b_1) = \sum_{i = 1}^n (y_i - b_0 + b_1x)^2
+\end{equation}
+\begin{equation}
+    \frac{\partial D}{\partial b_0} = -2 \sum_{i = 1}^n(y_i b_0 -b_1x_i)
+\end{equation}
+
+\begin{equation}
+    \frac{\partial D}{\partial b_1} = -2 \sum_{i = 1}^n(y_i b_0 -b_1x_1)x_i
+\end{equation}
+Igualando as derivadas parciais a zero, vem: 
+\begin{equation*}
+  -2 \sum_{i = 1}^n(y_i b_0 -b_1x_i) = 0
+\end{equation*}
+\begin{equation*}
+ -2 \sum_{i = 1}^n(y_i b_0 -b_1x_i) = 0
+\end{equation*}
+\begin{eqnarray}
+\begin{cases}
+\sum y_i - \sum b_0 - \sum b_1 x_i = 0 \\
+\sum x_i y_i - \sum b_0 x_i - \sum b_1 x_i^2 = 0 
+\end{cases}
+\end{eqnarray}
+\begin{eqnarray}
+\begin{cases}
+ (n) b_0 + (\sum x_i) b_1 = \sum y_i  \\
+ (\sum  x_i)b_0 + (\sum x_i^2)b_1  = \sum x_i y_i 
+\end{cases}
+\end{eqnarray}
+Resolvendo o sistema para $b_0$ e $b_1$ por qualquer um dos métodos, obtemos como resultado 
+\begin{eqnarray}
+b_1 = \frac{n \cdot \sum x_i y_i - \sum x_i \sum y_i \sum y_i}{n\cdot \sum x_i^2 - (\sum x_i)^2} \\ 
+b_0 = \frac{\sum y_i - (\sum x_i)b_1}{n}
+\end{eqnarray}
+\section{Implementação do ajuste da melhor curva em C}
+
+\begin{lstlisting} 
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "math.h"
+
+int main(){
+ double X[5] ={1.3, 3.4, 5.1, 6.8, 8.0} ; 
+ double Y[5] = {2.0, 5.2, 3.8, 6.1, 5.8}; 
+ double reta1[5]; 
+ double reta2[5]; 
+ double d1[5];
+ double d2[5];  
+ double D1 = 0;
+ double D2 = 0;  
+ double sx, sy, sxy, sx2, b0, b1; 
+int i; 
+int n = 5; 
+	printf("\ni  X[i], Y[i]"); 
+ for (i = 0; i < n; i ++ ){
+ 	reta1[i] = 0 + 1* X[i];
+ 	d1[i] = Y[i]- reta1[i];  
+ 	reta2[i] = 4.5 + 0*X[i];
+ 	d2[i] = Y[i]- reta2[i];  
+
+
+ 	printf("\n %i,  %.1f, %.1f",i + 1,  X[i], Y[i]); 
+	printf("\n"); 
+	
+ }
+ for (i = 0; i < n; i ++ ){
+ 	D1 += pow(d1[i], 2);
+ 	D2 += pow(d2[i], 2); 
+ //	printf("\n%.2f, %2.f\n", D1, D2); 
+ }
+ //Implementa os somatorios 
+ for (i = 0; i < n; i++){
+ 	 sx += X[i]; 
+ 	 sy +=Y[i]; 
+ 	 sxy +=X[i]*Y[i];
+ 	 sx2 +=pow(X[i], 2);   
+ 	//printf("sx = %.1f  sy = %.1f  sxy = %.1f sx2 = %.1f\n", sx, sy, sxy, sx2); 
+ }
+//Calcula os coeficientes da reta 
+b1 = (n* sxy - sx*sy)/(n*sx2- pow(sx, 2));
+b0 = (sy - sx*b1)/n; 
+printf("\nY =  %.1f +  %.1fX\n ", b0, b1); 
+return 0; 
+
+}
+\end{lstlisting}
+\end{document}
